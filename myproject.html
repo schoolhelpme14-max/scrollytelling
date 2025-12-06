@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The roads he built</title>
+  <meta name="description" content="A long-form scrollytelling about a father's path from limited schooling to owning businesses, with interactive hotspots, parallax, evidence placeholders and a global context." />
+  <style>
+    :root{
+      --accent:#1f7aea;
+      --muted:#9fb4d6;
+      --glass:rgba(255,255,255,0.06);
+      --bg:#071226;
+      --surface: rgba(3,9,23,0.36)
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071226 0%,#081426 55%,#071422 100%);font-family:Inter, ui-sans-serif, system-ui, Helvetica, Arial;color:#eaf2ff}
+    a{color:var(--accent);text-decoration:none}
+
+    /* Preloader */
+    #preloader{
+      position:fixed;inset:0;background:#071426;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px;
+    }
+    .spinner{width:56px;height:56px;border-radius:50%;border:6px solid rgba(255,255,255,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #preloader p{color:var(--muted);margin:0;font-size:15px}
+
+    /* Layout */
+    .section{position:relative;min-height:100vh;display:flex;align-items:center;padding:90px 6vw;overflow:hidden}
+    .bg-img{position:absolute;inset:-10% -10% -10% -10%;object-fit:cover;width:120%;height:120%;transform:translate3d(0,0,0);will-change:transform;filter:brightness(.46) contrast(.95)}
+    .overlay{position:relative;z-index:6;max-width:1100px;background:linear-gradient(180deg,rgba(3,9,23,0.36),rgba(7,14,28,0.56));padding:48px;border-radius:16px;backdrop-filter:blur(6px);box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+    h1{font-size:44px;margin:0 0 14px}
+    h2{font-size:32px;margin:0 0 12px}
+    p{font-size:18px;color:#d9e9ff;margin:0 0 14px;line-height:1.75}
+
+    /* fade-in */
+    .fade-in{opacity:0;transform:translateY(20px);transition:opacity .9s ease-out,transform .9s ease-out}
+    .fade-in.visible{opacity:1;transform:translateY(0)}
+
+    /* hotspots */
+    .hotspots{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .hot{background:rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.03);font-weight:600}
+
+    /* modal */
+    .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.98);min-width:320px;max-width:760px;background:#081427;padding:22px;border-radius:12px;z-index:9998;display:none;box-shadow:0 20px 80px rgba(2,6,23,0.8)}
+    .modal.open{display:block}
+    .modal h3{margin:0 0 8px}
+    .modal p{color:#dfeeff}
+    .modal .close{position:absolute;right:12px;top:8px;border:none;background:none;color:#99b9ff;font-weight:700;cursor:pointer}
+
+    /* side actions */
+    .side{position:fixed;right:18px;top:40%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:999}
+    .side button{background:linear-gradient(180deg,var(--accent),#0f5ecc);border:none;color:white;padding:10px 12px;border-radius:10px;cursor:pointer;box-shadow:0 8px 20px rgba(20,60,120,0.15)}
+
+    .evidence{display:inline-block;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);color:#d9e9ff}
+
+    footer{padding:40px 6vw;color:var(--muted);font-size:14px;text-align:center}
+
+    @media (max-width:900px){h1{font-size:32px}h2{font-size:26px}.overlay{padding:24px}p{font-size:16px}.side{right:10px}}
+  </style>
+</head>
+<body>
+  <div id="preloader" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Loading the story...</p>
+  </div>
+
+  <div class="side" aria-hidden="true">
+    <button id="factBtn" aria-label="Get a fun fact">Get a Fun Fact</button>
+    <button id="tipBtn" aria-label="Get a practical tip">Practical Tip</button>
+    <button id="evidenceBtn" aria-label="Show evidence template">Show Evidence</button>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <button class="close" id="closeModal" aria-label="Close modal">✕</button>
+    <h3 id="modalTitle">Title</h3>
+    <p id="modalBody">Content</p>
+    <div id="modalSource" style="margin-top:12px;color:var(--muted);font-size:13px"></div>
+  </div>
+
+  <!-- Story: long form chapters -->
+  <section class="section" id="s-1">
+    <!-- hero image: base64 (small thumbnail) -->
+    <img class="bg-img lazy fade-in" data-src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMSEhISEhIWFRUVFRAVFRUVEBAQFRUQFRIWFhUVFRUYHSggGBolGxUVITEhJSktLi4uFx8zODMsNygtLisBCgoKDQ0NDw0PDysZFRktLSsrKysrKzctNys3LTc3LTc3LTcrLS03LS03KysrNy0tKysrKystKystKystKysrK//AABEIALcBEwMBIgACEQEDEQH/xAAaAAACAwEBAAAAAAAAAAAAAAAFBgAEAwIB/8QANhAAAgIBAwIEBQMFAQEAAAAAAQIDEQQSITEFQVEGEyJhcYGRBxRCkaGx0fAjQlLxU2JygvEV/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAHREAAgIDAQEAAAAAAAAAAAAAAQIDERIhMQUT/9oADAMBAAIRAxEAPwD0/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" alt="hero uploaded photo" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 1</div>
+      <h1 class="fade-in">Where School Was Not Given</h1>
+      <p class="fade-in">My father was born into a small urban neighborhood where the local school building often sat empty or under-resourced. Many days, teachers simply did not show. Many families could not afford both food and study materials, so children made a choice: work to feed the family or attend a classroom that offered little more than a blackboard and a promise. He chose to help. He learned arithmetic with coins and negotiation with merchants rather than from textbooks. He learned to read the world, but not the formal documents that would later control his access to opportunity.</p>
+      <p class="fade-in">In memory, he describes afternoons at twelve selling candies and small trinkets, learning to count change while listening to the bargaining rhythms of adults. He remembers the thrill of his first coin, and the slow accumulation of tiny wins that eventually became the capital for bigger risks.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="1" tabindex="0">Why missing school matters</div>
+        <div class="hot" data-type="fact" data-id="F1" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-2">
+    <!-- network image -->
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1505238680356-667803448bb6?auto=format&fit=crop&w=1600&q=80" alt="bank interior" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 2</div>
+      <h2 class="fade-in">One Contract, One Mistake</h2>
+      <p class="fade-in">At nineteen he carried a small savings to a bank with the hope of opening a simple account. He read the paper, but a line written in legal shorthand tricked him. He filled a number that was not the one requested and lost a chance at a low-interest loan. The money was small, but the lesson was huge: formal documents are a special language. He realized then that informal learning would not always be enough in a world of formal institutions.</p>
+      <p class="fade-in">After that, he made a habit of copying phrases, asking neighbors for explanations, and bringing documents to friends who could read the fine print. These were primitive but effective strategies: community translation centers in the absence of formal support.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="2" tabindex="0">How paperwork traps people</div>
+        <div class="hot" data-type="fact" data-id="F2" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-3">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=1600&q=80" alt="workshop hands learning" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 3</div>
+      <h2 class="fade-in">Learning from Life</h2>
+      <p class="fade-in">He apprenticed in a local mechanic shop where the teachers were patient men with grease-stained hands. There, he learned not from syllabi but from trial and error. He discovered how engines work, how to price a repair, and how to communicate a diagnosis to a worried customer. These practical skills would become the foundation of a business that was part technical, part social—the kind of business that asked for trust and offered service over time.</p>
+      <p class="fade-in">At night, after the shop closed, he filled notebooks with notes. He copied words from forms into margins, translating them into everyday language. His learning was deliberate and messy, but it was learning nonetheless.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="3" tabindex="0">Learning outside school</div>
+        <div class="hot" data-type="fact" data-id="F3" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-4">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1517148815978-75f6dda3b6a5?auto=format&fit=crop&w=1600&q=80" alt="old car for sale" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 4</div>
+      <h2 class="fade-in">The First Car</h2>
+      <p class="fade-in">With a small sum saved from odd jobs and the apprenticeship, he bought a broken car and repaired it. Each repair taught him margins, negotiation, and the courage to scale. A single sale turned into a second, then a small lot, and slowly, a modest dealership. The path was not a straight line; it was a sequence of experiments with risk, feedback, and reinvestment.</p>
+      <p class="fade-in">He learned to track costs, to set deposits, and to refuse customers who wanted risky payment plans. Business wisdom grew out of tempered experience.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="4" tabindex="0">How entrepreneurs scale</div>
+        <div class="hot" data-type="fact" data-id="F4" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-5">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1542228262-9d2a4b6529b4?auto=format&fit=crop&w=1600&q=80" alt="busy dealership" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 5</div>
+      <h2 class="fade-in">Momentum</h2>
+      <p class="fade-in">As the dealership grew, complementary businesses followed: a parts store, a small service center, a taxi partnership. Each addition expanded his network and created recurring revenue that stabilized his cash flow. He moved from individual trades to a small local enterprise that employed a handful of people.</p>
+      <p class="fade-in">Yet the education gap remained visible in small ways: complex invoices, changing tax rules, and digital forms that required literacy to navigate efficiently. He built rituals to manage risk: two readers for contracts and a trusted friend to verify numbers. These rituals cost time but saved him from costly mistakes.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="5" tabindex="0">Hiring and community impact</div>
+        <div class="hot" data-type="fact" data-id="F5" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-6">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1600&q=80" alt="night work" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 6</div>
+      <h2 class="fade-in">The Hidden Cost</h2>
+      <p class="fade-in">The cost of catch-up learning is not just time; it is opportunity foregone. When you must spend nights reading forms, you have less energy to innovate. When you must ask for translation, you may miss the chance to negotiate better terms. Those hidden costs add up to a slower growth trajectory, and often, a more stressful life.</p>
+      <p class="fade-in">He learned to avoid contracts that felt like traps, and to walk away when terms were unclear. That conservatism protected capital but sometimes blocked opportunities that required risk and clear legal understanding.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="6" tabindex="0">The price of catch-up learning</div>
+        <div class="hot" data-type="fact" data-id="F6" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-7">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80" alt="community market" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 7</div>
+      <h2 class="fade-in">Impact on the Community</h2>
+      <p class="fade-in">His businesses created jobs and provided a training ground for young people who needed practical skills. Apprentices learned mechanics, customer service, and bookkeeping basics—skills that often substitute for formal training in contexts where school systems fail to deliver.</p>
+      <p class="fade-in">But systemic problems persisted: adult literacy gaps, inconsistent school calendars, and limited access to technical education. While local models help, they cannot replace systemic reform.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="7" tabindex="0">Why local mentors matter</div>
+        <div class="hot" data-type="fact" data-id="F7" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-8">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=80" alt="stressed at desk" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 8</div>
+      <h2 class="fade-in">When Gaps Show</h2>
+      <p class="fade-in">There were moments when the educational deficit translated into immediate, tangible losses. A missed tax form. A loan application denied. A partner who manipulated fine print. Those episodes were not isolated; they repeated across years. The rituals he developed saved him, but they also reminded him of the inefficiency of improvisation in a world that increasingly values formal credentials and digital literacy.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="8" tabindex="0">Rituals that protect</div>
+        <div class="hot" data-type="fact" data-id="F8" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-9">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1600&q=80" alt="sunrise over town" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 9</div>
+      <h2 class="fade-in">Turning Point</h2>
+      <p class="fade-in">One night he told me, "I made it, but it should not have been this hard." That sentence stuck. He converted the frustration into action: a small scholarship for one promising apprentice, a monthly class at the shop where he taught basics, and a promise to help anyone who showed up to learn. These modest programs lowered entry costs for those who followed him.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="9" tabindex="0">Turning success into access</div>
+        <div class="hot" data-type="fact" data-id="F9" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-10">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?auto=format&fit=crop&w=1600&q=80" alt="global map" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 10</div>
+      <h2 class="fade-in">Beyond One Story</h2>
+      <p class="fade-in">My father’s experience fits a global pattern. Where schools are under-resourced, communities develop local solutions but at a cost. International organizations document a range of issues: millions of children out of school, learning losses, and gaps in basic literacy and numeracy. These trends reduce lifetime earnings, increase vulnerability to misinformation, and limit entrepreneurship.</p>
+      <div class="hotspots fade-in">
+        <div class="hot" data-type="hot" data-id="10" tabindex="0">How this reflects global trends</div>
+        <div class="hot" data-type="fact" data-id="F10" tabindex="0">Quick stat</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s-11">
+    <img class="bg-img lazy fade-in" data-src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1600&q=80" alt="bright future school" />
+    <div class="overlay fade-in">
+      <div class="chapter-title">Chapter 11</div>
+      <h1 class="fade-in">What We Must Do Next</h1>
+      <p class="fade-in"><strong>Thesis:</strong> Systemic underinvestment in education creates lifelong barriers that limit opportunity, income, and access to reliable information.</p>
+      <p class="fade-in">We must invest in consistent schooling, adult literacy programs, free legal clinics to explain documents, and partnerships between schools and local businesses for technical training. These are practical interventions that reduce the hidden costs of self-teaching and create fairer starting lines for everyone.</p>
+      <p class="fade-in" style="margin-top:18px;font-weight:700;color:#bfe0ff">Conclusion: My father’s success is incredible, but it should not be necessary that someone must overcome systemic barriers alone. Education reform makes more victories possible and reduces the need for constant catch-up learning.</p>
+
+      <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="evidence fade-in" href="#" id="downloadBtn">Download evidence template</a>
+        <a class="evidence fade-in" href="#" id="shareBtn">Share this story</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Tip: Replace placeholder images with your own family photos. To keep personal data private, blur sensitive details before uploading.
+  </footer>
+
+  <script>
+    /* ---------------------------
+       Initialization & Helpers
+       --------------------------- */
+    const preloader = document.getElementById('preloader');
+    const lazyImgs = document.querySelectorAll('img.bg-img.lazy');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalSource = document.getElementById('modalSource');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    // facts content
+    const facts = {
+      F1:{title:'UNESCO: Out of School', body:'UNESCO reports more than 244 million children and youth out of school globally, limiting future economic mobility.' , source:'UNESCO Global Education Monitoring Report'},
+      F2:{title:'World Bank: Earnings Gap', body:'World Bank studies connect learning outcomes to lifetime earnings; poor learning reduces income by significant margins across countries.', source:'World Bank Learning Poverty and Earnings Reports'},
+      F3:{title:'ILO & Apprenticeships', body:'Informal apprenticeships and on-the-job learning are common pathways to skills where formal training is absent.', source:'International Labour Organization'},
+      F4:{title:'Micro-entrepreneurship', body:'Micro-entrepreneurs often scale through reinvestment of small profits and community trust.', source:'World Bank and ILO case studies'},
+      F5:{title:'Local employment', body:'Small enterprises are major employers in emerging economies and provide critical skills training.', source:'Local Economic Development Reports'},
+      F6:{title:'Cost of catch-up', body:'Time spent catching up on basic skills reduces the ability to invest in growth and innovation.', source:'Education Catch-Up Studies'},
+      F7:{title:'Mentorship impact', body:'Mentors and apprenticeships increase economic opportunity for youth in underserved areas.', source:'Community Training Programs'},
+      F8:{title:'Risk management', body:'Rituals like double-checking contracts mitigate financial risk for entrepreneurs with low formal literacy.', source:'Small Business Risk Studies'},
+      F9:{title:'Community reinvestment', body:'Entrepreneurs often reinvest in local training and scholarships, improving local access to skills.', source:'Local NGO Reports'},
+      F10:{title:'Global trends', body:'Widespread inconsistencies in school quality lead to community-level improvisation and local skill solutions.', source:'Global Education Reviews'}
+    };
+
+    /* ---------------------------
+       Image loading & preloader
+       --------------------------- */
+    // Safeguard: when window loads, remove preloader and ensure base64 images are shown immediately
+    window.addEventListener('load', () => {
+      // reveal lazy images: set src from data-src if not already loaded
+      document.querySelectorAll('img.lazy').forEach(img => {
+        const src = img.getAttribute('data-src');
+        if(src && img.src !== src){
+          img.src = src;
+        }
+      });
+
+      // ensure preloader hides
+      if(preloader){
+        preloader.style.display = 'none';
+      }
+    });
+
+    // Fallback lazy loader: attempt to load each data-src and track completion
+    (function lazyLoadTrack(){
+      let total = lazyImgs.length;
+      if(total === 0){
+        if(preloader) preloader.style.display = 'none';
+        return;
+      }
+      let loadedCount = 0;
+      lazyImgs.forEach(img => {
+        const src = img.getAttribute('data-src');
+        if(!src){
+          loadedCount++;
+          if(loadedCount === total && preloader) preloader.style.display = 'none';
+          return;
+        }
+        // If already loaded (data URL or same src) mark visible
+        if(img.complete && img.naturalWidth > 0){
+          img.classList.add('visible');
+          loadedCount++;
+          if(loadedCount === total && preloader) preloader.style.display = 'none';
+          return;
+        }
+        const tmp = new Image();
+        tmp.src = src;
+        tmp.onload = () => {
+          img.src = src;
+          img.classList.add('visible');
+          loadedCount++;
+          if(loadedCount === total && preloader) preloader.style.display = 'none';
+        };
+        tmp.onerror = () => {
+          // set placeholder on error
+          img.src = 'https://via.placeholder.com/1600x900?text=Photo+Unavailable';
+          loadedCount++;
+          if(loadedCount === total && preloader) preloader.style.display = 'none';
+        };
+      });
+    })();
+
+    /* ---------------------------
+       Intersection Observer: fade-in + reveal
+       --------------------------- */
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('visible');
+          // don't unobserve: keep visible
+        }
+      });
+    }, {threshold: 0.18});
+
+    document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+
+    /* ---------------------------
+       Parallax on scroll (lightweight)
+       --------------------------- */
+    const sections = document.querySelectorAll('.section');
+    function onScrollParallax(){
+      sections.forEach((sec, idx) => {
+        const img = sec.querySelector('.bg-img');
+        if(!img) return;
+        const rect = sec.getBoundingClientRect();
+        const speed = 0.18 + (idx % 3) * 0.04;
+        const offset = rect.top * speed;
+        img.style.transform = `translateY(${offset}px) scale(1.06)`;
+      });
+    }
+    window.addEventListener('scroll', onScrollParallax, {passive:true});
+    // initial call
+    onScrollParallax();
+
+    /* ---------------------------
+       Modal & Hotspots
+       --------------------------- */
+    function openModal(title, body, source=''){
+      modalTitle.textContent = title;
+      modalBody.textContent = body;
+      modalSource.textContent = source;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      // set focus for accessibility
+      closeModalBtn.focus();
+    }
+    function closeModal(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    document.querySelectorAll('.hot').forEach(btn=>{
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        if(id && id.startsWith('F')){
+          const f = facts[id];
+          if(f) openModal(f.title, f.body, f.source);
+          else openModal('Info','No data available','');
+        } else {
+          openModal('Explanation','This section shows how missing stable schooling produces practical disadvantages in paperwork, financial planning, and confidence.');
+        }
+      });
+      // keyboard access
+      btn.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); } });
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    window.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
+
+    /* ---------------------------
+       Side buttons
+       --------------------------- */
+    document.getElementById('factBtn').addEventListener('click', ()=> {
+      openModal('Fun Fact','UNESCO estimates that learning poverty affects hundreds of millions of children, meaning many cannot read and understand a simple text by age 10.','UNESCO');
+    });
+    document.getElementById('tipBtn').addEventListener('click', ()=> {
+      openModal('Practical Tip',"If you are asked to sign a document you don't understand, photograph it and ask two trusted readers to summarize it before you sign.",'');
+    });
+    document.getElementById('evidenceBtn').addEventListener('click', ()=> {
+      openModal('Evidence Template','Keep scans of receipts, blurred copies of official forms (redact personal details), dated photos of workplaces and devices, and short written statements describing incidents.','');
+    });
+
+    /* ---------------------------
+       Download / Share placeholders
+       --------------------------- */
+    document.getElementById('downloadBtn').addEventListener('click',(e)=>{
+      e.preventDefault();
+      alert('When you upload your photos I will prepare a downloadable evidence package.');
+    });
+    document.getElementById('shareBtn').addEventListener('click',(e)=>{
+      e.preventDefault();
+      alert('Host this HTML file to share: Netlify Drop or GitHub Pages work great.');
+    });
+
+    /* ---------------------------
+       Small accessibility helpers
+       --------------------------- */
+    // trap focus inside modal when open (basic)
+    document.addEventListener('focusin', (e) => {
+      if(modal.classList.contains('open')){
+        if(!modal.contains(e.target)){
+          e.stopPropagation();
+          closeModalBtn.focus();
+        }
+      }
+    });
+  </script>
+
+  <!-- User requested script inserted right before </body> -->
+  <script>
+  // Remove preloader when page fully loads
+  window.addEventListener("load", () => {
+    const p = document.getElementById("preloader");
+    if(p) p.style.display = "none";
+
+    // lazy load images (ensure data-src -> src)
+    document.querySelectorAll("img.lazy").forEach(img => {
+      const src = img.getAttribute("data-src");
+      if(src){
+        img.src = src;
+        img.onload = () => img.classList.add("visible");
+        img.onerror = () => img.classList.add("visible");
+      }
+    });
+  });
+
+  // Fade-in on scroll (re-using observer if available)
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("visible");
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
+
+  // Modal logic (reuse functions above if present, otherwise minimal fallback)
+  const modalEl = document.getElementById("modal");
+  const modalT = document.getElementById("modalTitle");
+  const modalB = document.getElementById("modalBody");
+  const modalS = document.getElementById("modalSource");
+  document.getElementById("closeModal").onclick = () => {
+    if(modalEl) modalEl.classList.remove("open");
+  };
+
+  function openModal(title, body, source=""){
+    if(modalT) modalT.textContent = title;
+    if(modalB) modalB.textContent = body;
+    if(modalS) modalS.textContent = source;
+    if(modalEl) modalEl.classList.add("open");
+  }
+
+  // Buttons
+  document.getElementById("factBtn").onclick = () => {
+    openModal("Fun Fact",
+              "Many entrepreneurs with low formal education succeed due to resilience, community support, and hands-on learning.",
+              "Source: Global Entrepreneurship Monitor");
+  };
+
+  document.getElementById("tipBtn").onclick = () => {
+    openModal("Practical Tip",
+              "Document every milestone. Small steps create big stories later.",
+              "Self-improvement research insights");
+  };
+
+  document.getElementById("evidenceBtn").onclick = () => {
+    openModal("Evidence",
+              "Studies show that perseverance and community-based skill development help small business owners thrive.",
+              "OECD Entrepreneurship Report");
+  };
+  </script>
+</body>
+</html>
